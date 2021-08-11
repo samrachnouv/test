@@ -1,0 +1,5050 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Unified Remote Scanning Architecture (URSA) REST APIs",
+    "description": "<h3>REST APIs that are entry points to running on demand scans for the programs:</h3><BR> Webscanning - <a href=\"http://aka.ms/ursawe\">aka.ms/ursawe</a> <ul><li>ControlGroup - Get a ControlGroup that defines a list of Controls to execute<li>SiteConfig - Onboard the Site URI to scan<li>ScanConfig - Configure a Scan mapping a Site URI and a ControlGroup with an optional schedule frequency<li>WebScan    - Execute a ScanConfig</ul><BR> Restscanning - <a href=\"http://aka.ms/ursawe\">aka.ms/ursawe</a> <ul><li>ControlGroup - Get a ControlGroup that defines a list of Controls to execute<li>ApiConfig - Onboard the API URI to scan<li>ApiScanConfig - Configure an API Scan mapping an API URI and a ControlGroup with an optional schedule frequency<li>ApiScan    - Execute an ApiScanConfig</ul>TLS Scanner - <a href=\"http://aka.ms/ursatls\">aka.ms/ursatls</a> <ul><li>Execute a Scan<li>Get Scan status (Results are only available via Kusto)</ul>",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://ursa-dev.trafficmanager.net/"
+    }
+  ],
+  "paths": {
+    "/api/v1/restscan/apis": {
+      "post": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Onboard an API, and the Service Tree Id it belongs to.",
+        "description": "Sample request to onboard an Api.\r\n            \r\nRe: `SwaggerOpenAPISpecUri`:\r\n1. The Swagger Spec must strictly conform to the <a target=\"_new\" href=\"https://swagger.io/specification/\">Open API Spec V 3.0.3 </a> (or higher ). Notably it must contain\r\nthe <a target=\"_new\" href=\"https://swagger.io/docs/specification/api-host-and-base-path/\">Server Url Attribute</a>\r\n1. If a swagger document is hosted via MS Swagger / Engineering Hub and is unreachable, please note that the Engineering Hub dashboards can be found <a target=\"_new\" href=\"https://jarvis-west.dc.ad.msft.net/dashboard/EngineeringHubProd\">here</a> and any issues can be remedied via ICM using Engineering Hub as the support team\r\n            \r\nRe: `clientSecretAuth`:\r\n1. Documentation, including an instructional video detailing the three datapoints `clientApplicationId`, `clientSecretUri`, and `serverApplicationId` can be found <a target=\"_new\" href=\"https://eng.ms/docs/cloud-ai-platform/security/azure-security/security-health-analytics/unified-remote-scanning-ursa/ursa-web-scanner/onboard/apionboard#onboarding-restapi-endpoints\">here</a> under the `Add Authentication to your API Configuration` section..\r\n1. `clientSecretUri` - Secret Permission: GET must be granted to Service Principal `Microsoft Unified Remote Scanning (URSA)`\r\n            \r\n            \r\n    POST /\r\n    {\r\n       \"serviceTreeId\": \"d49b8ca0-0369-4106-aa25-3fb2c8ca019d\",\r\n       \"apiUri\": \"https://ursa-dev.trafficmanager.net/\",\r\n       \"SwaggerOpenAPISpecUri\": \"https://ursa.trafficmanager.net/swagger/v1/swagger.json\",\r\n       \"RestApiAuth\": {\r\n            \"clientSecretAuth\": {\r\n                 \"clientApplicationId\": \"8a3840c3-01da-45c3-b05c-b21c7cf28b5d\",\r\n                 \"clientSecretUri\": \"https://ursaengr-kv-eus.vault.azure.net/secrets/UrsaEngineeringClientSecret/9860f56c0667460e822ec574b5d74121\",\r\n                 \"serverApplicationId\": \"3840c3b2-da3f-c3ea-5c9y-7cf28b5db21c\"\r\n             }\r\n       }\r\n    }",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "The Service Tree Id from Header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The Service Tree Id from Header",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered !:apiConfigRequestInsert",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestInsert"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestInsert"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestInsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "451": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Get all onboarded apis. N.B: This only includes services onboarded by the logged in user.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/apis/id": {
+      "get": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Check the status of an api previously onboarded for rest scanning.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "An onboarded api's id of type !:guid",
+            "schema": {
+              "type": "string",
+              "description": "An onboarded api's id of type !:guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/apis/uri": {
+      "get": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Check if an api URI is onboarded for webscanning",
+        "description": "Only one Service can exist for a System.Guid",
+        "parameters": [
+          {
+            "name": "uri",
+            "in": "query",
+            "description": "An Services's Uri of type System.Uri",
+            "schema": {
+              "type": "string",
+              "description": "An Services's Uri of type System.Uri",
+              "format": "uri",
+              "nullable": true,
+              "example": "http://webscantest.com/"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/apis/serviceTreeId": {
+      "get": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Get all onboarded apis associated with a ServiceTree",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "query",
+            "description": "A ServiceTreeId of type System.Guid",
+            "schema": {
+              "type": "string",
+              "description": "A ServiceTreeId of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/apis/{id}": {
+      "put": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Update a previously onboarded Api.",
+        "description": "Sample request to onboard an Api.\r\n            \r\nRe: `SwaggerOpenAPISpecUri`:\r\n1. The Swagger Spec must strictly conform to the <a target=\"_new\" href=\"https://swagger.io/specification/\">Open API Spec V 3.0.3 </a> (or higher ). Notably it must contain\r\nthe <a target=\"_new\" href=\"https://swagger.io/docs/specification/api-host-and-base-path/\">Server Url Attribute</a>\r\n1. If a swagger document is hosted via MS Swagger / Engineering Hub and is unreachable, please note that the Engineering Hub dashboards can be found <a target=\"_new\" href=\"https://jarvis-west.dc.ad.msft.net/dashboard/EngineeringHubProd\">here</a> and any issues can be remedied via ICM using Engineering Hub as the support team\r\n            \r\nRe: `clientSecretAuth`:\r\n1. Documentation, including an instructional video detailing the three datapoints `clientApplicationId`, `clientSecretUri`, and `serverApplicationId` can be found <a target=\"_new\" href=\"https://eng.ms/docs/cloud-ai-platform/security/azure-security/security-health-analytics/unified-remote-scanning-ursa/ursa-web-scanner/onboard/apionboard#onboarding-restapi-endpoints\">here</a> under the `Add Authentication to your API Configuration` section..\r\n1. `clientSecretUri` - Secret Permission: GET must be granted to Service Principal `Microsoft Unified Remote Scanning (URSA)`\r\n            \r\n            \r\n    PUT /\r\n    {\r\n       \"SwaggerOpenAPISpecUri\": \"https://ursa.trafficmanager.net/swagger/v1/swagger.json\",\r\n       \"RestApiAuth\": {\r\n            \"clientSecretAuth\": {\r\n                 \"clientApplicationId\": \"8a3840c3-01da-45c3-b05c-b21c7cf28b5d\",\r\n                 \"clientSecretUri\": \"https://ursaengr-kv-eus.vault.azure.net/secrets/UrsaEngineeringClientSecret/9860f56c0667460e822ec574b5d74121\",\r\n                 \"serverApplicationId\": \"3840c3b2-da3f-c3ea-5c9y-7cf28b5db21c\"\r\n             }\r\n       }\r\n    }",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered Microsoft.Ursa.WebApi.ApiConfigRequestUpdate",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestUpdate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestUpdate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiConfigRequestUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "451": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ApiConfig"
+        ],
+        "summary": "Deletes specified Microsoft.Ursa.WebApi.ApiConfig object.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Site Config ID uniquely describing the Site Config entry",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Site Config ID uniquely describing the Site Config entry",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "ServiceTreeId",
+            "in": "header",
+            "description": "A Service Tree id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Service Tree id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "204": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans": {
+      "post": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Execute a restscan.",
+        "requestBody": {
+          "description": "A valid restscan request object.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestscanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestscanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestscanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/{id}": {
+      "get": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Get a RestScan by its unique identifier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestscanResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/report/{id}/status": {
+      "get": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Get detailed information about the scan's report status",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Scan Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Scan Id",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestscanScanProgress"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/report/{id}/sarif": {
+      "get": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Get the results of the webscan as a Sarif Report.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/report/{id}/detailscanfindings": {
+      "get": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Get the detailed scan finding results. A zip file containing log information and html report for findings with descriptions and suggestions for remediation.",
+        "description": "Not available for webscan in/with status: Unknown, Preparing, Scanning, or Completed With Error",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/configs/{id}/scans": {
+      "get": {
+        "tags": [
+          "ApiScan"
+        ],
+        "summary": "Get all restscans executed based on the provided scan config id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/configs": {
+      "post": {
+        "tags": [
+          "ApiScanConfig"
+        ],
+        "summary": "Create an ApiScanConfig",
+        "description": "Sample request to onboard an Api without specifying Authentication.\r\n            \r\n    POST /\r\n    {\r\n       \"apiConfigId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n       \"controlGroupId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n       \"scheduledFrequency\": \"OnDemand\"\r\n    }\r\n            \r\nNote: valid values for scheduledFrequency include:\r\n * **Weekly**: will run every 7 days Example: created on Jun 10 will run on Jun 17.\r\n * **Bimonthly**: will run every 14 days Example: created on Jun 10 will run on 11, 23 of each month.Example: created on Jun 17 will run on 6, 18th of each month.\r\n * **Monthly**: will run every month. Example: created on Jun 17 will run on the 18th of each month. Example: created on Jun 29 will run on the 10th of each month.\r\n * **OnDemand**: no schedule. Scans only run when you manually POST a new scan.\r\n            \r\nScans entered with a scheuledFrequency of **Weekly**, **Bimonthly**, and **Monthly** will not be run automatically, however you will be provided a scan config id that you can use\r\nto run a scan any time you wish.",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ApiScanConfig"
+        ],
+        "summary": "Get all onboarded api scan configs. N.B: This only includes api scan configs onboarded by the logged in user.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiScanConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/configs/{id}": {
+      "get": {
+        "tags": [
+          "ApiScanConfig"
+        ],
+        "summary": "Get ApiScanConfig by its unique Identifier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiScanConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ApiScanConfig"
+        ],
+        "summary": "Update a previously onboarded Api Scan.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered Microsoft.Ursa.WebApi.ApiScanConfigRequestUpdate",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequestUpdate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequestUpdate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiScanConfigRequestUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/restscan/scans/configs/serviceTree/{serviceTreeId}": {
+      "get": {
+        "tags": [
+          "ApiScanConfig"
+        ],
+        "summary": "Get all api scan configs associated with a ServiceTreeId",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "path",
+            "description": "An Site's Uri of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "An Site's Uri of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiScanConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/controls/{id}": {
+      "get": {
+        "tags": [
+          "Control"
+        ],
+        "summary": "Get Control information previously onboarded for Webscanning.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "An onboarded Control's id of type !:guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "An onboarded Control's id of type !:guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/controls/groups": {
+      "get": {
+        "tags": [
+          "ControlGroup"
+        ],
+        "summary": "Get a list of ControlGroup information previously onboarded for Webscanning.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ControlGroupResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions": {
+      "post": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Create a FindingSuppression.",
+        "description": "Any scan findings that match **FindingUri** + **ErrorId** + **ServiceTreeId** will be marked as suppressed.\r\n            \r\nSample request to implement a Finding Suppression.\r\n            \r\n    POST /\r\n    {\r\n      \"findingId\": \"B5503AD043114B1D8D875F39C1E0E9D7\",\r\n      \"findingUri\": \"https://gateway.azureserviceprofiler.net/\",\r\n      \"errorId\": \"SAMESITE COOKIE\",\r\n      \"reason\": \"NotApplicable\",\r\n      \"scanConfigId\": \"a9781792-4f27-4b52-b958-f6df280f6b13\"\r\n    }\r\n            \r\nNote that the **ServiceTreeId** referenced for the suppression check is retrieved from a lookup of the associated SiteConfig information associated to the ScanConfigId provided during finding suppression creation.\r\n            \r\nFor a list of valid reasons Microsoft.Ursa.WebApi.ReasonSuppression:\r\n    FalsePositive\r\n    ByDesign\r\n    TechLimitofScanner\r\n    NotApplicable\r\n    AssuranceApproved",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingSuppressionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingSuppressionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingSuppressionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Get all onboarded Finding Suppressions for the current user. N.B: This only includes Finding Suppressions onboarded by the logged in user.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingSuppressionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions/{id}": {
+      "delete": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Disable a FindingSuppression",
+        "description": "For a list of valid reasons Microsoft.Ursa.WebApi.ReasonUnsuppression:\r\n    MadeinError\r\n    OverridebySecurity\r\n    TruePositive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Finding Suppression ID uniquely describing the Finding Suppression entry",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Finding Suppression ID uniquely describing the Finding Suppression entry",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "ReasonUnsuppress",
+            "in": "query",
+            "description": "Captures an Approved Reason for removing this Finding Suppression",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReasonUnsuppression"
+            }
+          },
+          {
+            "name": "CommentUnsuppress",
+            "in": "query",
+            "description": "Captures additional information related to removing this Finding Suppression",
+            "schema": {
+              "type": "string",
+              "description": "Captures additional information related to removing this Finding Suppression",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "204": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Get FindingSuppression by its unique Identifier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingSuppressionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions/siteConfig/{siteConfigId}": {
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Get all Finding Suppressions associated with a SiteConfigId",
+        "parameters": [
+          {
+            "name": "siteConfigId",
+            "in": "path",
+            "description": "A Site Config Id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Site Config Id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingSuppressionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions/serviceTree/{serviceTreeId}": {
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Get all Finding Suppressions associated with a ServiceTreeId",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "path",
+            "description": "A Service Tree Id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Service Tree Id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingSuppressionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions/serviceTree/{serviceTreeId}/count": {
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Get a count of Finding Suppressions associated with a ServiceTreeId",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "path",
+            "description": "A Service Tree Id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Service Tree Id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/findingsuppressions/suppressioncheck": {
+      "get": {
+        "tags": [
+          "FindingSuppression"
+        ],
+        "summary": "Check if a given finding should be suppressed by SuppressionKey (Pipe delimited FindingUri + ErrorId + ServiceTreeId)",
+        "parameters": [
+          {
+            "name": "findingUri",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          },
+          {
+            "name": "errorId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          },
+          {
+            "name": "serviceTreeId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FindingSuppressionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/configs": {
+      "post": {
+        "tags": [
+          "ScanConfig"
+        ],
+        "summary": "Create a ScanConfig",
+        "description": "Sample request to onboard a ScanConfig without specifying Authentication.\r\n            \r\n    POST /\r\n    {\r\n       \"siteConfigId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n       \"controlGroupId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\r\n       \"authenticatedScan\": true,\r\n       \"scheduledFrequency\": \"OnDemand\"\r\n    }\r\n            \r\nNote: valid values for scheduledFrequency include:\r\n * **Weekly**: will run every 7 days Example: created on Jun 10 will run on Jun 17.\r\n * **Bimonthly**: will run every 14 days Example: created on Jun 10 will run on 11, 23 of each month.Example: created on Jun 17 will run on 6, 18th of each month.\r\n * **Monthly**: will run every month. Example: created on Jun 17 will run on the 18th of each month. Example: created on Jun 29 will run on the 10th of each month.\r\n * **OnDemand**: no schedule. Scans only run when you manually POST a new scan.\r\n            \r\nScans entered with a scheuledFrequency of **Weekly**, **Bimonthly**, and **Monthly** will not be run automatically, however you will be provided a scan config id that you can use\r\nto run a scan any time you wish.",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ScanConfig"
+        ],
+        "summary": "Get all onboarded scan configs. N.B: This only includes scan configs onboarded by the logged in user.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/configs/{id}": {
+      "get": {
+        "tags": [
+          "ScanConfig"
+        ],
+        "summary": "Get ScanConfig by its unique Identifier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ScanConfig"
+        ],
+        "summary": "Update a previously onboarded Scan.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered Microsoft.Ursa.WebApi.ScanConfigRequestUpdate",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequestUpdate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequestUpdate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConfigRequestUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/configs/serviceTree/{serviceTreeId}": {
+      "get": {
+        "tags": [
+          "ScanConfig"
+        ],
+        "summary": "Get all scan configs associated with a ServiceTreeId",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "path",
+            "description": "A Service Tree id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Service Tree id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/sites": {
+      "post": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Onboard a Site, and the Service Tree Id it belongs to.",
+        "description": "Sample request to onboard a Site without specifying Authentication.\r\n            \r\n    POST /\r\n    {\r\n       \"serviceTreeId\": \"d49b8ca0-0369-4106-aa25-3fb2c8ca019d\",\r\n       \"siteUri\": \"https://ursa-dev.trafficmanager.net/\"\r\n    }",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered Microsoft.Ursa.WebApi.SiteConfigRequestInsert",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestInsert"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestInsert"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestInsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "451": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Get all onboarded sites. N.B: This only includes sites onboarded by the logged in user.",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SiteConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/sites/id": {
+      "get": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Check the status of a Site previously onboarded for Webscanning.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "An onboarded Site's id of type !:guid",
+            "schema": {
+              "type": "string",
+              "description": "An onboarded Site's id of type !:guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/sites/uri": {
+      "get": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Check if a Site URI is onboarded for webscanning",
+        "description": "Only one Site can exist for a System.Guid",
+        "parameters": [
+          {
+            "name": "uri",
+            "in": "query",
+            "description": "An Site's Uri of type System.Uri",
+            "schema": {
+              "type": "string",
+              "description": "An Site's Uri of type System.Uri",
+              "format": "uri",
+              "nullable": true,
+              "example": "http://webscantest.com/"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/sites/serviceTreeId": {
+      "get": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Get all onboarded Sites associated with a ServiceTree",
+        "parameters": [
+          {
+            "name": "serviceTreeId",
+            "in": "query",
+            "description": "A ServiceTreeId of type System.Guid",
+            "schema": {
+              "type": "string",
+              "description": "A ServiceTreeId of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SiteConfigResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/sites/{id}": {
+      "put": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Update a previously onboarded Site.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The user entered Microsoft.Ursa.WebApi.SiteConfigRequestUpdate",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestUpdate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestUpdate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteConfigRequestUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          },
+          "451": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SiteConfig"
+        ],
+        "summary": "Deletes specified Microsoft.Ursa.WebApi.SiteConfig object.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Site Config ID uniquely describing the Site Config entry",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Site Config ID uniquely describing the Site Config entry",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "ServiceTreeId",
+            "in": "header",
+            "description": "A Service Tree id of type System.Guid",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A Service Tree id of type System.Guid",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "204": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tls/scans": {
+      "post": {
+        "tags": [
+          "TlsScan"
+        ],
+        "summary": "Execute an on-demand TLS scan in URSA.",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TlsScanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TlsScanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TlsScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tls/scans/{id}": {
+      "get": {
+        "tags": [
+          "TlsScan"
+        ],
+        "summary": "Get an executed TLS scan's status. N.B: The results of the actual scan will only be available in Kusto ~5m after status of the scan is Completed. See aka.ms/ursatls for more info.",
+        "description": "Sample request to get a ScanId's Kusto Results\r\n            \r\n    ScanResult\r\n    | where ingestion_time() > ago(1d)\r\n    | extend scanId = tostring(ScanInfo.ScanDefinitionId)\r\n    | extend scanRootId = tostring(ScanInfo.ScanDefinitionRootId)\r\n    | where scanRootId == 'TLS_ON_DEMAND_SCAN'\r\n    | where scanId == 'EnterScanIdHere'",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TlsScanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans": {
+      "post": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Execute a Webscan.",
+        "requestBody": {
+          "description": "A valid webscan request object.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebscanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebscanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebscanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/{id}": {
+      "get": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Get a WebScan by its unique identifier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebscanResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/report/{id}/status": {
+      "get": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Get detailed information about the scan's report status",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Scan Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Scan Id",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebscanScanProgress"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/report/{id}/sarif": {
+      "get": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Get the results of the webscan as a Sarif Report.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/report/{id}/detailscanfindings": {
+      "get": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Get the detailed scan finding results. A zip file containing log information and html report for findings with descriptions and suggestions for remediation.",
+        "description": "Not available for webscan in status: Unknown, Preparing, Scanning",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/webscan/scans/configs/{id}/scans": {
+      "get": {
+        "tags": [
+          "Webscan"
+        ],
+        "summary": "Get all webscans executed based on the provided scan config id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClientSecretAuth": {
+        "required": [
+          "clientApplicationId",
+          "clientSecretUri",
+          "serverApplicationId"
+        ],
+        "type": "object",
+        "properties": {
+          "clientApplicationId": {
+            "type": "string",
+            "description": "The ApplicationId used to authenticate",
+            "format": "uuid",
+            "example": "8a3840c3-01da-45c3-b05c-b21c7cf28b5d"
+          },
+          "clientSecretUri": {
+            "type": "string",
+            "description": "A URI that points to where the ClientSecret is stored for the ClientApplicationId",
+            "format": "uri",
+            "example": "https://ursaengr-kv-eus.vault.azure.net/secrets/UrsaEngineeringClientSecret"
+          },
+          "serverApplicationId": {
+            "type": "string",
+            "description": "The server application id of the rest API to be scanned",
+            "example": "c4a8be75-b437-4f52-819b-11bf73b96f0f"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Encapsulation of data required to authenticate a client based on secret retrieval / keyvault"
+      },
+      "RestApiAuth": {
+        "type": "object",
+        "properties": {
+          "clientSecretAuth": {
+            "$ref": "#/components/schemas/ClientSecretAuth"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Credentials required for Authenticating into a Rest Api"
+      },
+      "CloudLocation": {
+        "enum": [
+          "Public",
+          "Fairfax"
+        ],
+        "type": "string",
+        "description": "Cloud location"
+      },
+      "ApiConfigRequestInsert": {
+        "required": [
+          "apiUri",
+          "serviceTreeId",
+          "swaggerOpenAPISpecUri"
+        ],
+        "type": "object",
+        "properties": {
+          "restApiAuth": {
+            "$ref": "#/components/schemas/RestApiAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          },
+          "apiUri": {
+            "type": "string",
+            "description": "The URI to be scanned",
+            "format": "uri",
+            "example": "https://ursa-dev.trafficmanager.net/"
+          },
+          "swaggerOpenAPISpecUri": {
+            "type": "string",
+            "description": "The Swagger URI to use for the REST Scan.",
+            "format": "uri",
+            "example": "https://ursa.trafficmanager.net/swagger/v1/swagger.json"
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the ApiURL",
+            "format": "uuid",
+            "example": "d49b8ca0-0369-4106-aa25-3fb2c8ca019d"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A ApiConfig must contain at minimum a ApiUri, ApiJsonUri and a ServiceTreeId"
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "CreateResponse": {
+        "type": "object",
+        "properties": {
+          "getByIdUri": {
+            "type": "string",
+            "description": "The URI to retrieve the object that was created.",
+            "format": "uri",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Model for a generic response."
+      },
+      "SiteVerify": {
+        "type": "object",
+        "properties": {
+          "sourceType": {
+            "type": "string",
+            "description": "This refers to the Type of the Site Verifier e.g. MsGraph, TrustedPartner, Whois etc.",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "description": "This refers to the specific Source Name - e.g. AppId of the Trusted Partner, DomainName used to Query MsGraph etc.",
+            "nullable": true
+          },
+          "isScanningAllowed": {
+            "type": "boolean",
+            "description": "A true | false | null representation of if Webscanning is allowed on the site.",
+            "nullable": true
+          },
+          "verificationTime": {
+            "type": "string",
+            "description": "The time the site was verified",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The model for storing webscanner Site Configurations"
+      },
+      "ApiConfigResponse": {
+        "required": [
+          "apiUri",
+          "serviceTreeId",
+          "swaggerOpenAPISpecUri"
+        ],
+        "type": "object",
+        "properties": {
+          "restApiAuth": {
+            "$ref": "#/components/schemas/RestApiAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          },
+          "apiUri": {
+            "type": "string",
+            "description": "The URI to be scanned",
+            "format": "uri",
+            "example": "https://ursa-dev.trafficmanager.net/"
+          },
+          "swaggerOpenAPISpecUri": {
+            "type": "string",
+            "description": "The Swagger URI to use for the REST Scan.",
+            "format": "uri",
+            "example": "https://ursa.trafficmanager.net/swagger/v1/swagger.json"
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the ApiURL",
+            "format": "uuid",
+            "example": "d49b8ca0-0369-4106-aa25-3fb2c8ca019d"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "apiVerifyList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SiteVerify"
+            },
+            "description": "AllowListing information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes to be made available to the user if requested."
+      },
+      "ApiConfigRequestUpdate": {
+        "type": "object",
+        "properties": {
+          "swaggerOpenAPISpecUri": {
+            "type": "string",
+            "description": "The Swagger URI to use for the REST Scan.",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://ursa.trafficmanager.net/swagger/v1/swagger.json"
+          },
+          "restApiAuth": {
+            "$ref": "#/components/schemas/RestApiAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes that can be entered by the user to update a Site Configuration"
+      },
+      "RestscanRequest": {
+        "required": [
+          "apiScanConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "apiScanConfigId": {
+            "type": "string",
+            "description": "The id reference to the Microsoft.Ursa.WebApi.ApiScanConfigRequest to be scanned",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RestscanResponse": {
+        "required": [
+          "apiScanConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "apiScanConfigId": {
+            "type": "string",
+            "description": "The id reference to the Microsoft.Ursa.WebApi.ApiScanConfigRequest to be scanned",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the scan",
+            "format": "uuid"
+          },
+          "scanStatus": {
+            "type": "string",
+            "description": "Status",
+            "nullable": true
+          },
+          "exceptionMessageIfError": {
+            "type": "string",
+            "description": "Error Message if Scan ends in Error",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The Internal representation of Microsoft.Ursa.WebApi.RestscanRequest"
+      },
+      "RestscanScanProgress": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Gets or sets the token for the scan.",
+            "nullable": true
+          },
+          "scanName": {
+            "type": "string",
+            "description": "Gets or sets the scan name.",
+            "nullable": true
+          },
+          "scanProgress": {
+            "type": "integer",
+            "description": "Gets or sets the scan progress.",
+            "format": "int32"
+          },
+          "timeRemaining": {
+            "type": "string",
+            "description": "Gets or sets the remaining time.",
+            "nullable": true
+          },
+          "timeElapsed": {
+            "type": "string",
+            "description": "Gets or sets the time elapsed.",
+            "nullable": true
+          },
+          "timeStart": {
+            "type": "string",
+            "description": "Gets or sets the start time.",
+            "nullable": true
+          },
+          "timeEnd": {
+            "type": "string",
+            "description": "Gets or sets the end time.",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "Gets or sets the state of the scan.",
+            "nullable": true
+          },
+          "loggedIn": {
+            "type": "boolean",
+            "description": "Gets or sets if it is logged in."
+          },
+          "linksInQueue": {
+            "type": "integer",
+            "description": "Gets or sets the number of the links in the queue.",
+            "format": "int32"
+          },
+          "linksCrawled": {
+            "type": "integer",
+            "description": "Gets or sets the number of the links crawled.",
+            "format": "int32"
+          },
+          "attacksInQueue": {
+            "type": "integer",
+            "description": "Gets or sets the number of the attacks in the queue.",
+            "format": "int32"
+          },
+          "attacked": {
+            "type": "integer",
+            "description": "Gets or sets the number of the attacked.",
+            "format": "int32"
+          },
+          "vulnerable": {
+            "type": "integer",
+            "description": "Gets or sets the number of the vulnerable.",
+            "format": "int32"
+          },
+          "requests": {
+            "type": "integer",
+            "description": "Gets or sets the number of the requests.",
+            "format": "int32"
+          },
+          "failedRequests": {
+            "type": "integer",
+            "description": "Gets or sets the number of the failed requests.",
+            "format": "int32"
+          },
+          "networkSpeed": {
+            "type": "integer",
+            "description": "Gets or sets the network speed.",
+            "format": "int32"
+          },
+          "dripDelay": {
+            "type": "integer",
+            "description": "Gets or sets the drip delay.",
+            "format": "int32"
+          },
+          "avgRespTime": {
+            "type": "integer",
+            "description": "Gets or sets the average response time.",
+            "format": "int32"
+          },
+          "scanFailure": {
+            "type": "integer",
+            "description": "Gets or sets the number of the failures.",
+            "format": "int32"
+          },
+          "scanFailureDescription": {
+            "type": "string",
+            "description": "Gets or sets the scan failure description.",
+            "nullable": true
+          },
+          "agentTimeStart": {
+            "type": "string",
+            "description": "Gets or sets the agent start time.",
+            "nullable": true
+          },
+          "agentTimeEnd": {
+            "type": "string",
+            "description": "Gets or sets the agent end time.",
+            "nullable": true
+          },
+          "agentStatus": {
+            "type": "string",
+            "description": "Gets or sets the status of the agent.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A representation of `ScanDto` in the Webscanner repo, re-articulated in Web.API to prevent a cyclic dependency"
+      },
+      "ApiScanConfigRequest": {
+        "required": [
+          "apiConfigId",
+          "controlGroupId",
+          "scheduledFrequency"
+        ],
+        "type": "object",
+        "properties": {
+          "apiConfigId": {
+            "type": "string",
+            "description": "The ApiConfigId to be scanned",
+            "format": "uuid"
+          },
+          "controlGroupId": {
+            "type": "string",
+            "description": "The ControlGroupId to run on the Site.",
+            "format": "uuid"
+          },
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Scan Configurations"
+      },
+      "ApiScanConfigResponse": {
+        "required": [
+          "apiConfigId",
+          "controlGroupId",
+          "scheduledFrequency"
+        ],
+        "type": "object",
+        "properties": {
+          "apiConfigId": {
+            "type": "string",
+            "description": "The ApiConfigId to be scanned",
+            "format": "uuid"
+          },
+          "controlGroupId": {
+            "type": "string",
+            "description": "The ControlGroupId to run on the Site.",
+            "format": "uuid"
+          },
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the api ScanConfig",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Api Scan Configurations"
+      },
+      "ApiScanConfigRequestUpdate": {
+        "required": [
+          "scheduledFrequency"
+        ],
+        "type": "object",
+        "properties": {
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes that can be entered by the user to update an Api Site Configuration"
+      },
+      "ControlResponse": {
+        "required": [
+          "controlType",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the control."
+          },
+          "engineModuleId": {
+            "type": "string",
+            "description": "The engine module id that this control maps to.",
+            "nullable": true
+          },
+          "engineName": {
+            "type": "string",
+            "description": "Engine name.",
+            "nullable": true
+          },
+          "controlType": {
+            "type": "string",
+            "description": "Identify if it is active or passive."
+          },
+          "controlGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Contains a list of control group ids.",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Scan Configurations"
+      },
+      "ControlGroupResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the control group."
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the control group.",
+            "nullable": true
+          },
+          "controlGroupType": {
+            "type": "string",
+            "description": "Identify if it is active or passive.",
+            "nullable": true
+          },
+          "controlIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "A list of ids of Microsoft.Ursa.WebApi.ControlRequest.",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Contains a group of Microsoft.Ursa.WebApi.ControlRequest."
+      },
+      "ReasonSuppression": {
+        "enum": [
+          "FalsePositive",
+          "ByDesign",
+          "TechLimitofScanner",
+          "NotApplicable",
+          "AssuranceApproved"
+        ],
+        "type": "string",
+        "description": "List of valid reasons for Finding Suppression creation"
+      },
+      "FindingSuppressionRequest": {
+        "required": [
+          "errorId",
+          "findingUri",
+          "reasonSuppression",
+          "scanConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "errorId": {
+            "type": "string",
+            "description": "Error Id matching entry in Kusto Webscanner Finding table.\r\n            \r\nNote: The FindingUri and ErrorId will later be used as a Key to suppress findings during result processing by Ursa Platform."
+          },
+          "findingId": {
+            "type": "string",
+            "description": "Finding Id matching entry in Kusto Webscanner Finding table\r\nMay be used in the future to enforce that we're suppressing a finding that exists at the time of creation.\r\nNot currently required.",
+            "nullable": true
+          },
+          "findingUri": {
+            "type": "string",
+            "description": "Finding Uri matching entry in Kusto Webscanner Finding table.\r\n            \r\nNote: The FindingUri and ErrorId will later be used as a Key to suppress findings during result processing by Ursa Platform."
+          },
+          "reasonSuppression": {
+            "$ref": "#/components/schemas/ReasonSuppression"
+          },
+          "commentSuppression": {
+            "type": "string",
+            "description": "Captures additional information related to creating this Finding Suppression",
+            "nullable": true
+          },
+          "scanConfigId": {
+            "type": "string",
+            "description": "ScanConfigId to be associated with this Finding Suppression entry.\r\nThis is used to lookup the service tree information that will later used to scope the findings associated with a given scan.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Contains finding suppression information."
+      },
+      "ReasonUnsuppression": {
+        "enum": [
+          "MadeinError",
+          "OverridebySecurity",
+          "TruePositive"
+        ],
+        "type": "string",
+        "description": "List of valid reasons for removing a Finding Suppression"
+      },
+      "FindingSuppressionResponse": {
+        "type": "object",
+        "properties": {
+          "createdDateUtc": {
+            "type": "string",
+            "description": "Date the Finding Suppression was created",
+            "format": "date-time"
+          },
+          "creatorId": {
+            "type": "string",
+            "description": "Identify who created the suppression",
+            "format": "uuid"
+          },
+          "unsuppressDateUtc": {
+            "type": "string",
+            "description": "Date the Finding Suppression was removed",
+            "format": "date-time",
+            "nullable": true
+          },
+          "unsuppressorId": {
+            "type": "string",
+            "description": "Identify who removed the suppression",
+            "format": "uuid",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Indicates if the Finding Suppression is active. When a suppression is deleted, it will be set to disabled."
+          },
+          "errorId": {
+            "type": "string",
+            "description": "Error Id matching entry in Kusto Webscanner Finding table.\r\nThe FindingUri and ErrorId will later be used as a Key to suppress findings during result processing by Ursa Platform.",
+            "nullable": true
+          },
+          "expirationDateUtc": {
+            "type": "string",
+            "description": "Planned expiration date for the Finding Suppression",
+            "format": "date-time"
+          },
+          "findingId": {
+            "type": "string",
+            "description": "Finding Id matching entry in Kusto Webscanner Finding table\r\nMay be used to check that we're suppressing a finding that exists.",
+            "nullable": true
+          },
+          "findingUri": {
+            "type": "string",
+            "description": "Finding Uri matching entry in Kusto Webscanner Finding table.\r\nThe FindingUri and ErrorId will later be used as a Key to suppress findings during result processing by Ursa Platform.",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "reasonSuppress": {
+            "$ref": "#/components/schemas/ReasonSuppression"
+          },
+          "commentSuppression": {
+            "type": "string",
+            "description": "Captures additional information related to creating this Finding Suppression",
+            "nullable": true
+          },
+          "reasonUnsuppress": {
+            "$ref": "#/components/schemas/ReasonUnsuppression"
+          },
+          "commentUnsuppress": {
+            "type": "string",
+            "description": "Captures additional information related to removing this Finding Suppression",
+            "nullable": true
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the FindingSuppression",
+            "format": "uuid"
+          },
+          "siteConfigId": {
+            "type": "string",
+            "description": "SiteConfigId to be associated with this Finding Suppression entry.\r\nThis is later used to scope the findings associated with a given scan.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Finding Suppressions"
+      },
+      "ScanConfigRequest": {
+        "required": [
+          "controlGroupId",
+          "scheduledFrequency",
+          "siteConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "siteConfigId": {
+            "type": "string",
+            "description": "The SiteConfigId to be scanned",
+            "format": "uuid"
+          },
+          "controlGroupId": {
+            "type": "string",
+            "description": "The ControlGroupId to run on the Site.",
+            "format": "uuid"
+          },
+          "authenticatedScan": {
+            "type": "boolean",
+            "description": "Set if this is an authenticated scan or not. If this is true, authentication in the site config will be used.\r\nIf not specified, the default value is true.",
+            "nullable": true,
+            "example": true
+          },
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Scan Configurations"
+      },
+      "ScanConfigResponse": {
+        "required": [
+          "controlGroupId",
+          "scheduledFrequency",
+          "siteConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "siteConfigId": {
+            "type": "string",
+            "description": "The SiteConfigId to be scanned",
+            "format": "uuid"
+          },
+          "controlGroupId": {
+            "type": "string",
+            "description": "The ControlGroupId to run on the Site.",
+            "format": "uuid"
+          },
+          "authenticatedScan": {
+            "type": "boolean",
+            "description": "Set if this is an authenticated scan or not. If this is true, authentication in the site config will be used.\r\nIf not specified, the default value is true.",
+            "nullable": true,
+            "example": true
+          },
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the ScanConfig",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing webscanner Scan Configurations"
+      },
+      "ScanConfigRequestUpdate": {
+        "required": [
+          "scheduledFrequency"
+        ],
+        "type": "object",
+        "properties": {
+          "authenticatedScan": {
+            "type": "boolean",
+            "description": "Set if this is an authenticated scan or not. If this is true, authentication in the site config will be used.\r\nIf not specified, the default value is true.",
+            "nullable": true,
+            "example": false
+          },
+          "doNotCrawl": {
+            "type": "boolean",
+            "description": "Set if the scan is only limit to the specified url in the site config and no crawls.",
+            "example": true
+          },
+          "scheduledFrequency": {
+            "type": "string",
+            "description": "A frequency with which to schedule this scan. Possible values are ondemand, weekly, bimonthly and monthly.",
+            "example": "OnDemand"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes that can be entered by the user to update a Site Configuration"
+      },
+      "CertAuth": {
+        "required": [
+          "certificateSecretIdentifierUri"
+        ],
+        "type": "object",
+        "properties": {
+          "certificateSecretIdentifierUri": {
+            "type": "string",
+            "description": "The keyvault certificate secret indentifier URI",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-client-cert-prod"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Certificates required for Authenticating into a Site."
+      },
+      "AadSsoAuth": {
+        "required": [
+          "passwordKeyvaultSecretIdentifier",
+          "usernameKeyvaultSecretIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "usernameKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Username keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-username"
+          },
+          "passwordKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Password keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-password"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Aad SSO Auth for scanning website (NOT rest API) that use AAD authentication"
+      },
+      "DstsAuth": {
+        "required": [
+          "passwordKeyvaultSecretIdentifier",
+          "usernameKeyvaultSecretIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "usernameKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Username keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-username"
+          },
+          "passwordKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Password keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-password"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DSTS auth"
+      },
+      "FormAuth": {
+        "required": [
+          "loginUrl",
+          "passwordKeyvaultSecretIdentifier",
+          "usernameKeyvaultSecretIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "usernameKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Username keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-username"
+          },
+          "passwordKeyvaultSecretIdentifier": {
+            "type": "string",
+            "description": "Password keyvault secret identifier",
+            "format": "uri",
+            "example": "https://ursaauthentication-prd.vault.azure.net/secrets/webscanner-corp-serviceaccount-password"
+          },
+          "loginUrl": {
+            "type": "string",
+            "description": "The login url.",
+            "format": "uri"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Form auth."
+      },
+      "MacroAuth": {
+        "required": [
+          "macroScriptBlobUri"
+        ],
+        "type": "object",
+        "properties": {
+          "macroScriptBlobUri": {
+            "type": "string",
+            "description": "The blob url that contains macro file.",
+            "format": "uri",
+            "example": "https://ursastoredevcus.blob.core.windows.net/webscanner-macro/record.rec"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Macro auth."
+      },
+      "SiteAuth": {
+        "type": "object",
+        "properties": {
+          "certificate": {
+            "$ref": "#/components/schemas/CertAuth"
+          },
+          "aadSso": {
+            "$ref": "#/components/schemas/AadSsoAuth"
+          },
+          "dsts": {
+            "$ref": "#/components/schemas/DstsAuth"
+          },
+          "form": {
+            "$ref": "#/components/schemas/FormAuth"
+          },
+          "macro": {
+            "$ref": "#/components/schemas/MacroAuth"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Credentials required for Authenticating into a Site."
+      },
+      "SiteConfigRequestInsert": {
+        "required": [
+          "serviceTreeId",
+          "siteUri"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the SiteURL",
+            "format": "uuid",
+            "example": "d49b8ca0-0369-4106-aa25-3fb2c8ca019d"
+          },
+          "siteAuth": {
+            "$ref": "#/components/schemas/SiteAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          },
+          "siteUri": {
+            "type": "string",
+            "description": "The URI to be scanned",
+            "format": "uri",
+            "example": "https://ursa-dev.trafficmanager.net/"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A SiteConfig must contain at minimum a SiteUri and a ServiceTreeId"
+      },
+      "SiteConfigResponse": {
+        "required": [
+          "serviceTreeId",
+          "siteUri"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the SiteURL",
+            "format": "uuid",
+            "example": "d49b8ca0-0369-4106-aa25-3fb2c8ca019d"
+          },
+          "siteAuth": {
+            "$ref": "#/components/schemas/SiteAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          },
+          "siteUri": {
+            "type": "string",
+            "description": "The URI to be scanned",
+            "format": "uri",
+            "example": "https://ursa-dev.trafficmanager.net/"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "siteVerifyList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SiteVerify"
+            },
+            "description": "AllowListing information",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes to be made available to the user if requested."
+      },
+      "SiteConfigRequestUpdate": {
+        "required": [
+          "serviceTreeId"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the SiteURL",
+            "format": "uuid",
+            "example": "d49b8ca0-0369-4106-aa25-3fb2c8ca019d"
+          },
+          "siteAuth": {
+            "$ref": "#/components/schemas/SiteAuth"
+          },
+          "cloudLocation": {
+            "$ref": "#/components/schemas/CloudLocation"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The attributes that can be entered by the user to update a Site Configuration"
+      },
+      "TlsScanRequest": {
+        "required": [
+          "siteUri"
+        ],
+        "type": "object",
+        "properties": {
+          "siteUri": {
+            "type": "string",
+            "description": "The URL to be scanned",
+            "format": "uri",
+            "example": "https://portal.microsoft.com/"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Model for a TLS Scan"
+      },
+      "TlsScanResponse": {
+        "required": [
+          "siteUri"
+        ],
+        "type": "object",
+        "properties": {
+          "siteUri": {
+            "type": "string",
+            "description": "The URL to be scanned",
+            "format": "uri",
+            "example": "https://portal.microsoft.com/"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "scanStatus": {
+            "type": "string",
+            "description": "Status of the TLS Scan",
+            "nullable": true
+          },
+          "exceptionMessageIfError": {
+            "type": "string",
+            "description": "Error Message if Scan ends in Error",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The externally facing model for storing TLS Scan Configurations"
+      },
+      "WebscanRequest": {
+        "required": [
+          "scanConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "scanConfigId": {
+            "type": "string",
+            "description": "The id reference to the Microsoft.Ursa.WebApi.ScanConfigRequest to be scanned",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WebscanResponse": {
+        "required": [
+          "scanConfigId"
+        ],
+        "type": "object",
+        "properties": {
+          "scanConfigId": {
+            "type": "string",
+            "description": "The id reference to the Microsoft.Ursa.WebApi.ScanConfigRequest to be scanned",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique Identfier",
+            "nullable": true
+          },
+          "serviceTreeId": {
+            "type": "string",
+            "description": "The service tree associated with the scan",
+            "format": "uuid"
+          },
+          "scanStatus": {
+            "type": "string",
+            "description": "Status",
+            "nullable": true
+          },
+          "exceptionMessageIfError": {
+            "type": "string",
+            "description": "Error Message if Scan ends in Error",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The Internal representation of Microsoft.Ursa.WebApi.WebscanRequest"
+      },
+      "WebscanScanProgress": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Gets or sets the token for the scan.",
+            "nullable": true
+          },
+          "scanName": {
+            "type": "string",
+            "description": "Gets or sets the scan name.",
+            "nullable": true
+          },
+          "scanProgress": {
+            "type": "integer",
+            "description": "Gets or sets the scan progress.",
+            "format": "int32"
+          },
+          "timeRemaining": {
+            "type": "string",
+            "description": "Gets or sets the remaining time.",
+            "nullable": true
+          },
+          "timeElapsed": {
+            "type": "string",
+            "description": "Gets or sets the time elapsed.",
+            "nullable": true
+          },
+          "timeStart": {
+            "type": "string",
+            "description": "Gets or sets the start time.",
+            "nullable": true
+          },
+          "timeEnd": {
+            "type": "string",
+            "description": "Gets or sets the end time.",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "Gets or sets the state of the scan.",
+            "nullable": true
+          },
+          "loggedIn": {
+            "type": "boolean",
+            "description": "Gets or sets if it is logged in."
+          },
+          "linksInQueue": {
+            "type": "integer",
+            "description": "Gets or sets the number of the links in the queue.",
+            "format": "int32"
+          },
+          "linksCrawled": {
+            "type": "integer",
+            "description": "Gets or sets the number of the links crawled.",
+            "format": "int32"
+          },
+          "attacksInQueue": {
+            "type": "integer",
+            "description": "Gets or sets the number of the attacks in the queue.",
+            "format": "int32"
+          },
+          "attacked": {
+            "type": "integer",
+            "description": "Gets or sets the number of the attacked.",
+            "format": "int32"
+          },
+          "vulnerable": {
+            "type": "integer",
+            "description": "Gets or sets the number of the vulnerable.",
+            "format": "int32"
+          },
+          "requests": {
+            "type": "integer",
+            "description": "Gets or sets the number of the requests.",
+            "format": "int32"
+          },
+          "failedRequests": {
+            "type": "integer",
+            "description": "Gets or sets the number of the failed requests.",
+            "format": "int32"
+          },
+          "networkSpeed": {
+            "type": "integer",
+            "description": "Gets or sets the network speed.",
+            "format": "int32"
+          },
+          "dripDelay": {
+            "type": "integer",
+            "description": "Gets or sets the drip delay.",
+            "format": "int32"
+          },
+          "avgRespTime": {
+            "type": "integer",
+            "description": "Gets or sets the average response time.",
+            "format": "int32"
+          },
+          "scanFailure": {
+            "type": "integer",
+            "description": "Gets or sets the number of the failures.",
+            "format": "int32"
+          },
+          "scanFailureDescription": {
+            "type": "string",
+            "description": "Gets or sets the scan failure description.",
+            "nullable": true
+          },
+          "agentTimeStart": {
+            "type": "string",
+            "description": "Gets or sets the agent start time.",
+            "nullable": true
+          },
+          "agentTimeEnd": {
+            "type": "string",
+            "description": "Gets or sets the agent end time.",
+            "nullable": true
+          },
+          "agentStatus": {
+            "type": "string",
+            "description": "Gets or sets the status of the agent.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A representation of `ScanDto` in the Webscanner repo, re-articulated in Web.API to prevent a cyclic dependency"
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/token",
+            "scopes": {
+              "https://ursa-dev.trafficmanager.net/ReadWriteAccess": "ReadWriteAccess"
+            }
+          }
+        }
+      },
+      "bearer": {
+        "type": "http",
+        "description": "Please insert access token below",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2": [ ]
+    },
+    {
+      "bearer": [ ]
+    }
+  ]
+}
